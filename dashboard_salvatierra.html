@@ -1,0 +1,1179 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Objetivos 2026 · Salvatierra</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+  :root {
+    --bg: #f5f4f0;
+    --surface: #ffffff;
+    --border: #e2e0d8;
+    --border-strong: #c8c5bb;
+    --text: #1a1916;
+    --text-muted: #6b6860;
+    --text-faint: #a09e98;
+    --accent: #2d5a27;
+    --accent-light: #e8f0e6;
+    --warn: #7a4a00;
+    --warn-light: #fef3e2;
+    --danger: #7a1f1f;
+    --danger-light: #fce8e8;
+    --info: #1a3d6e;
+    --info-light: #e8eef8;
+    --purple: #4a2d7a;
+    --purple-light: #f0ebfa;
+    --mono: 'DM Mono', monospace;
+    --sans: 'DM Sans', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 20px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header-left h1 {
+    font-size: 17px;
+    font-weight: 600;
+    letter-spacing: -0.3px;
+  }
+  .header-left span {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-family: var(--mono);
+  }
+  .header-actions { display: flex; gap: 10px; align-items: center; }
+
+  /* ── BUTTONS ── */
+  .btn {
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 500;
+    padding: 7px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn-primary {
+    background: var(--text);
+    color: white;
+    border-color: var(--text);
+  }
+  .btn-primary:hover { background: #333; }
+  .btn-secondary {
+    background: var(--surface);
+    color: var(--text);
+    border-color: var(--border-strong);
+  }
+  .btn-secondary:hover { background: var(--bg); }
+  .btn-ghost {
+    background: transparent;
+    color: var(--text-muted);
+    border-color: transparent;
+  }
+  .btn-ghost:hover { background: var(--bg); color: var(--text); }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* ── UPLOAD SCREEN ── */
+  #upload-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: calc(100vh - 65px);
+    gap: 24px;
+    padding: 40px;
+  }
+  .upload-box {
+    background: var(--surface);
+    border: 2px dashed var(--border-strong);
+    border-radius: 12px;
+    padding: 60px 80px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    max-width: 480px;
+    width: 100%;
+  }
+  .upload-box:hover { border-color: var(--text); background: var(--bg); }
+  .upload-box .icon { font-size: 36px; margin-bottom: 16px; }
+  .upload-box h2 { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+  .upload-box p { font-size: 13px; color: var(--text-muted); }
+  #file-input { display: none; }
+
+  /* ── MAIN APP ── */
+  #app { display: none; }
+
+  /* ── STATS BAR ── */
+  .stats-bar {
+    padding: 20px 32px;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 16px;
+  }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 20px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    cursor: default;
+  }
+  .stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+    border-color: var(--border-strong);
+  }
+  .stat-card:hover .progress-fill {
+    filter: brightness(1.1);
+  }
+  .stat-label {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+  }
+  .stat-value {
+    font-family: var(--mono);
+    font-size: 26px;
+    font-weight: 500;
+    line-height: 1;
+    margin-bottom: 10px;
+  }
+  .progress-bar {
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 2px;
+    transition: width 0.4s ease;
+  }
+  .progress-fill.warn { background: #d97706; }
+  .stat-sub { font-size: 11px; color: var(--text-faint); margin-top: 6px; }
+
+  /* ── TABS ── */
+  .tabs-container {
+    padding: 0 32px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    gap: 0;
+    background: var(--surface);
+  }
+  .tab {
+    padding: 12px 20px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-muted);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--text); border-bottom-color: var(--text); }
+  .tab-count {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1px 7px;
+    font-size: 11px;
+    font-family: var(--mono);
+  }
+  .tab.active .tab-count { background: var(--text); color: white; border-color: var(--text); }
+
+  /* ── TOOLBAR ── */
+  .toolbar {
+    padding: 14px 32px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .search-box {
+    width: 280px;
+    flex: none;
+    position: relative;
+  }
+  .toolbar-filters {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+  }
+  .search-box input {
+    width: 100%;
+    padding: 7px 12px 7px 32px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-family: var(--sans);
+    font-size: 13px;
+    background: var(--bg);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .search-box input:focus { border-color: var(--border-strong); background: white; }
+  .search-icon {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-faint);
+    font-size: 13px;
+    pointer-events: none;
+  }
+  .filter-btns { display: flex; gap: 6px; }
+  .filter-btn {
+    font-size: 12px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    background: transparent;
+    font-family: var(--sans);
+    color: var(--text-muted);
+    transition: all 0.15s;
+  }
+  .filter-btn:hover { border-color: var(--border-strong); color: var(--text); }
+  .filter-btn.active { background: var(--text); color: white; border-color: var(--text); }
+
+  /* ── TABLE ── */
+  .table-wrap {
+    overflow-x: auto;
+    padding: 20px 32px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  thead th {
+    text-align: left;
+    padding: 8px 12px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+    background: var(--bg);
+  }
+  tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background 0.15s;
+  }
+  tbody tr.row-done { background: #f0f7ee; }
+  tbody tr.row-done:hover { background: #e8f3e5; }
+  tbody tr.row-done td { color: var(--text-muted); }
+  tbody tr.row-pending { background: #fdf0f0; }
+  tbody tr.row-pending:hover { background: #fae8e8; }
+  tbody td {
+    padding: 10px 12px;
+    vertical-align: middle;
+  }
+
+  /* ── CHECKBOX ── */
+  .check-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .custom-check {
+    width: 18px;
+    height: 18px;
+    border: 2px solid var(--border-strong);
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+    flex-shrink: 0;
+    background: white;
+  }
+  .custom-check:hover { border-color: var(--accent); }
+  .custom-check.checked {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: white;
+  }
+  .custom-check.checked::after { content: '✓'; font-size: 11px; font-weight: 600; }
+
+  /* ── BADGES ── */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 500;
+    font-family: var(--mono);
+    white-space: nowrap;
+  }
+  .badge-done { background: var(--accent-light); color: var(--accent); }
+  .badge-wu { background: var(--info-light); color: var(--info); }
+  .badge-proceso { background: var(--warn-light); color: var(--warn); }
+  .badge-disp { background: var(--purple-light); color: var(--purple); }
+  .badge-pend { background: var(--danger-light); color: var(--danger); }
+  .badge-recambio { background: #e8f4fb; color: #0f4c75; }
+  .badge-rec { background: #f0f7ee; color: #2e7d32; }
+  .badge-ticket {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    cursor: default;
+  }
+  .badge-ticket.t2 { border-color: #b8d4f0; background: #eef5fc; color: #1a4a7a; }
+  .badge-ticket.proa { border-color: #c5d9b8; background: #edf5e8; color: #2a5a1a; }
+
+  /* ── TICKET EDITOR ── */
+  .ticket-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 160px;
+  }
+  .ticket-display {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .ticket-note {
+    font-size: 11px;
+    color: var(--text-faint);
+    font-style: italic;
+  }
+  .inline-input {
+    width: 100%;
+    padding: 4px 8px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-family: var(--mono);
+    font-size: 12px;
+    background: white;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .inline-input:focus { border-color: var(--border-strong); }
+
+  /* ── PERSON CELL ── */
+  .person-cell { display: flex; flex-direction: column; gap: 2px; }
+  .person-name { font-weight: 500; }
+  .person-id { font-family: var(--mono); font-size: 11px; color: var(--text-faint); }
+  .device-info { font-family: var(--mono); font-size: 11px; color: var(--text-muted); }
+  .device-model { font-size: 12px; color: var(--text-muted); }
+
+  /* ── SUBTIPO BADGE ── */
+  .subtipo-nb { background: #e8eef8; color: #1a3d6e; font-size: 10px; padding: 2px 6px; border-radius: 3px; font-weight: 500; }
+  .subtipo-dt { background: #f0f0f0; color: #555; font-size: 10px; padding: 2px 6px; border-radius: 3px; font-weight: 500; }
+
+  /* ── BRAND LOGO ── */
+  .brand { display: flex; align-items: center; gap: 16px; }
+  .brand-logo {
+    height: 36px;
+    width: auto;
+    display: block;
+    flex-shrink: 0;
+  }
+
+  /* ── FILTER SEPARATOR ── */
+  .filter-sep { width: 1px; height: 20px; background: var(--border); margin: 0 2px; }
+
+  /* ── NOTA TEXTAREA ── */
+  .nota-textarea {
+    width: 100%;
+    min-width: 160px;
+    resize: none;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    font-family: var(--sans);
+    font-size: 12px;
+    color: var(--text-muted);
+    background: transparent;
+    padding: 3px 6px;
+    outline: none;
+    line-height: 1.4;
+    overflow: hidden;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .nota-textarea:hover { border-color: var(--border); }
+  .nota-textarea:focus {
+    border-color: var(--border-strong);
+    background: white;
+    color: var(--text);
+    resize: vertical;
+  }
+
+  /* ── EMPTY STATE ── */
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-muted);
+  }
+  .empty-state .icon { font-size: 32px; margin-bottom: 12px; }
+
+  /* ── TOAST ── */
+  #toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--text);
+    color: white;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: all 0.25s;
+    z-index: 999;
+    pointer-events: none;
+  }
+  #toast.show { opacity: 1; transform: translateY(0); }
+
+  /* ── RESPONSIVE ── */
+  /* ── DEADLINE CARD ── */
+  .deadline-edit-btn {
+    cursor: pointer;
+    font-size: 11px;
+    color: var(--text-faint);
+    margin-left: 6px;
+    transition: color 0.15s;
+  }
+  .deadline-edit-btn:hover { color: var(--text-muted); }
+  .deadline-input {
+    display: none;
+    margin-top: 6px;
+    font-size: 11px;
+    border: 1px solid var(--border-strong);
+    border-radius: 4px;
+    padding: 3px 6px;
+    font-family: var(--mono);
+    background: white;
+    width: 100%;
+    outline: none;
+  }
+  .deadline-input:focus { border-color: var(--accent); }
+
+  @media (max-width: 900px) {
+    .stats-bar { grid-template-columns: repeat(3, 1fr); }
+    header { padding: 14px 16px; }
+    .stats-bar, .toolbar, .table-wrap { padding-left: 16px; padding-right: 16px; }
+    .tabs-container { padding: 0 16px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <div class="brand">
+      <img class="brand-logo" src="logo_sancor.svg" alt="Grupo Sancor Seguros">
+      <div>
+        <h1>Objetivos 2026 · Salvatierra</h1>
+        <span id="file-name">Sin archivo cargado</span>
+      </div>
+    </div>
+  </div>
+  <div class="header-actions">
+    <button class="btn btn-ghost" onclick="document.getElementById('file-input').click()">↑ Cargar otro archivo</button>
+    <button class="btn btn-secondary" id="btn-export" onclick="exportXLSX()" disabled>↓ Exportar XLSX</button>
+    <input type="file" id="file-input" accept=".xlsx,.xls" onchange="handleFile(event)">
+  </div>
+</header>
+
+<!-- UPLOAD SCREEN -->
+<div id="upload-screen">
+  <div class="upload-box" onclick="document.getElementById('file-input').click()" ondragover="event.preventDefault()" ondrop="handleDrop(event)">
+    <div class="icon">📊</div>
+    <h2>Cargar archivo de objetivos</h2>
+    <p>Arrastrá el archivo .xlsx o hacé clic para seleccionarlo</p>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app">
+  <!-- Stats -->
+  <div class="stats-bar">
+    <div class="stat-card">
+      <div class="stat-label">Obsolescencia · Recambios</div>
+      <div class="stat-value" id="obs-val">0/0</div>
+      <div class="progress-bar"><div class="progress-fill" id="obs-bar" style="width:0%"></div></div>
+      <div class="stat-sub" id="obs-pct">0% completado</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Actualizaciones · Win 25H2</div>
+      <div class="stat-value" id="win-val">0/0</div>
+      <div class="progress-bar"><div class="progress-fill" id="win-bar" style="width:0%"></div></div>
+      <div class="stat-sub" id="win-pct">0% completado</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Actualizaciones · Office 2024</div>
+      <div class="stat-value" id="off-val">0/0</div>
+      <div class="progress-bar"><div class="progress-fill" id="off-bar" style="width:0%"></div></div>
+      <div class="stat-sub" id="off-pct">0% completado</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Progreso general</div>
+      <div class="stat-value" id="gen-val">0%</div>
+      <div class="progress-bar"><div class="progress-fill" id="gen-bar" style="width:0%"></div></div>
+      <div class="stat-sub" id="gen-sub">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Días restantes</div>
+      <div class="stat-value" id="days-val" style="color:var(--accent)">—</div>
+      <div class="progress-bar"><div class="progress-fill" id="days-bar" style="width:0%"></div></div>
+      <div class="stat-sub">
+        <span id="days-date">Límite: 30/05/2026</span>
+        <span class="deadline-edit-btn" onclick="editDeadline()" title="Editar fecha límite">✏️</span>
+      </div>
+      <input type="date" id="deadline-input" class="deadline-input"
+        onchange="saveDeadline(this.value)"
+        onblur="closeDeadlineInput()"
+        onkeydown="if(event.key==='Escape')closeDeadlineInput()">
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs-container">
+    <div class="tab active" onclick="switchTab('obs')" id="tab-obs">
+      Obsolescencia &amp; Recambios <span class="tab-count" id="tc-obs">0</span>
+    </div>
+    <div class="tab" onclick="switchTab('act')" id="tab-act">
+      Actualizaciones Win/Office <span class="tab-count" id="tc-act">0</span>
+    </div>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <div class="search-box">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="search-input" placeholder="Buscar por nombre, usuario, equipo..." oninput="applyFilter()">
+    </div>
+    <div class="toolbar-filters">
+      <div class="filter-btns" id="status-filter-btns">
+        <button class="filter-btn active" onclick="setFilter('all', this)">Todos</button>
+        <button class="filter-btn" onclick="setFilter('pending', this)">Pendientes</button>
+        <button class="filter-btn" onclick="setFilter('done', this)">Completados</button>
+      </div>
+      <div class="filter-sep" id="device-filter-sep"></div>
+      <div class="filter-btns" id="device-filter-btns">
+        <button class="filter-btn active" onclick="setDeviceFilter('all', this)">🖥 Equipos</button>
+        <button class="filter-btn" onclick="setDeviceFilter('Desktop', this)">Desktop</button>
+        <button class="filter-btn" onclick="setDeviceFilter('Notebook', this)">Notebook</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tables -->
+  <div id="panel-obs" class="table-wrap">
+    <table id="table-obs">
+      <thead>
+        <tr>
+          <th style="width:50px;text-align:center">✓</th>
+          <th>Propietario</th>
+          <th>Equipo</th>
+          <th>Modelo</th>
+          <th>OS</th>
+          <th>Ticket T2/PROA</th>
+          <th>Notas</th>
+        </tr>
+      </thead>
+      <tbody id="tbody-obs"></tbody>
+    </table>
+  </div>
+
+  <div id="panel-act" class="table-wrap" style="display:none">
+    <table id="table-act">
+      <thead>
+        <tr>
+          <th style="width:50px;text-align:center">✓</th>
+          <th>Propietario</th>
+          <th>Equipo</th>
+          <th>Modelo</th>
+          <th style="text-align:center">Win 25H2</th>
+          <th>PROA SO</th>
+          <th style="text-align:center">Office 2024</th>
+          <th>PROA Office</th>
+        </tr>
+      </thead>
+      <tbody id="tbody-act"></tbody>
+    </table>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ── STATE ──
+let workbook = null;
+let obsData = [];
+let actData = [];
+let currentTab = 'obs';
+let currentFilter = 'all';
+let deviceFilter = 'all';
+let deadlineDate = '2026-05-30';
+let notaColIdx = -1;
+
+// ── FILE HANDLING ──
+function handleDrop(e) {
+  e.preventDefault();
+  const file = e.dataTransfer.files[0];
+  if (file) loadFile(file);
+}
+function handleFile(e) {
+  const file = e.target.files[0];
+  if (file) loadFile(file);
+  e.target.value = '';
+}
+function loadFile(file) {
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      workbook = XLSX.read(e.target.result, { type: 'array' });
+      parseData();
+      document.getElementById('upload-screen').style.display = 'none';
+      document.getElementById('app').style.display = 'block';
+      document.getElementById('file-name').textContent = file.name;
+      document.getElementById('btn-export').disabled = false;
+      renderAll();
+      updateStats();
+      showToast('Archivo cargado correctamente');
+    } catch(err) {
+      alert('Error al leer el archivo: ' + err.message);
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+// ── PARSE ──
+function sheetToJSON(sheetName) {
+  const ws = workbook.Sheets[sheetName];
+  if (!ws) return [];
+  return XLSX.utils.sheet_to_json(ws, { defval: null, raw: false });
+}
+
+function parseData() {
+  // Detectar columna de Notas en la hoja Obsolescencia
+  const obsWS = workbook.Sheets['Objetivos Obsolescencia'];
+  const obsHeader = XLSX.utils.sheet_to_json(obsWS, { header: 1, defval: null })[0] || [];
+  notaColIdx = obsHeader.findIndex(h => h && /nota/i.test(String(h)));
+
+  // Obsolescencia
+  const obsRaw = sheetToJSON('Objetivos Obsolescencia');
+  obsData = obsRaw.map((r, i) => ({
+    _idx: i,
+    realizado: parseBoolean(r['Realizado']),
+    ticket: r['T2 recambio'] || '',
+    nota: (notaColIdx >= 0 ? r[obsHeader[notaColIdx]] : null) || '',
+    responsable: r['Responsable'] || '',
+    subtipo: r['Subtipo'] || '',
+    nombre: r['Nombre'] || '',
+    serie: r['Numero de Serie'] || '',
+    fabricante: r['Fabricante'] || '',
+    modelo: r['Modelo'] || '',
+    os: r['OS Name'] || '',
+    asignadoA: r['Asignado a'] || '',
+    propietario: r['Propietario'] || '',
+    idUser: r['ID User'] || '',
+  }));
+
+  // Actualizaciones
+  const actRaw = sheetToJSON('Actualizaciones ver w11 Office');
+  actData = actRaw.map((r, i) => ({
+    _idx: i,
+    realizado: parseBoolean(r['Realizado']),
+    win25h2: r['Win 11 25H2'] || '',
+    proaSO: r['PROA Asignado  SO'] || '',
+    office2024: r['Office 2024'] || '',
+    proaOffice: r['PROA Asignado  Office'] || '',
+    responsable: r['Responsable'] || '',
+    subtipo: r['Subtipo'] || '',
+    nombre: r['Nombre'] || '',
+    fabricante: r['Nombre2'] || '',
+    modelo: r['Modelo'] || '',
+    os: r['OS Name'] || '',
+    asignadoA: r['Asignado a'] || '',
+    propietario: r['Propietario'] || '',
+    idUser: r['ID User'] || '',
+  }));
+}
+
+function parseBoolean(v) {
+  if (v === true || v === 'TRUE' || v === 'true' || v === '1') return true;
+  return false;
+}
+
+// ── RENDER ──
+function renderAll() {
+  renderObs();
+  renderAct();
+  updateTabCounts();
+}
+
+function getFilteredObs() {
+  const q = document.getElementById('search-input').value.toLowerCase();
+  return obsData.filter(r => {
+    const matchSearch = !q ||
+      (r.propietario||'').toLowerCase().includes(q) ||
+      (r.idUser||'').toLowerCase().includes(q) ||
+      (r.nombre||'').toLowerCase().includes(q) ||
+      (r.modelo||'').toLowerCase().includes(q) ||
+      (r.ticket||'').toLowerCase().includes(q);
+    const matchFilter = currentFilter === 'all' ||
+      (currentFilter === 'done' && r.realizado) ||
+      (currentFilter === 'pending' && !r.realizado);
+    const isNb = (r.subtipo||'').toLowerCase() === 'notebook';
+    const matchDevice = deviceFilter === 'all' ||
+      (deviceFilter === 'Notebook' && isNb) ||
+      (deviceFilter === 'Desktop' && !isNb);
+    return matchSearch && matchFilter && matchDevice;
+  });
+}
+
+function getFilteredAct() {
+  const q = document.getElementById('search-input').value.toLowerCase();
+  return actData.filter(r => {
+    const matchSearch = !q ||
+      (r.propietario||'').toLowerCase().includes(q) ||
+      (r.idUser||'').toLowerCase().includes(q) ||
+      (r.nombre||'').toLowerCase().includes(q) ||
+      (r.modelo||'').toLowerCase().includes(q);
+    const matchFilter = currentFilter === 'all' ||
+      (currentFilter === 'done' && r.realizado) ||
+      (currentFilter === 'pending' && !r.realizado);
+    return matchSearch && matchFilter;
+  });
+}
+
+function renderObs() {
+  const tbody = document.getElementById('tbody-obs');
+  const rows = getFilteredObs();
+  if (rows.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><div class="icon">🔍</div><p>Sin resultados</p></div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = rows.map(r => {
+    const { ticket } = parseTicketNote(r.ticket);
+    const isNb = r.subtipo === 'Notebook';
+    const rowCls = r.realizado ? 'row-done' : 'row-pending';
+    return `
+    <tr class="${rowCls}" id="obs-row-${r._idx}">
+      <td class="check-wrap">
+        <div class="custom-check ${r.realizado ? 'checked' : ''}" onclick="toggleObs(${r._idx})" title="Marcar/desmarcar realizado"></div>
+      </td>
+      <td>
+        <div class="person-cell">
+          <span class="person-name">${r.propietario || '—'}</span>
+          <span class="person-id">${r.idUser || ''}</span>
+        </div>
+      </td>
+      <td>
+        <div class="device-info">
+          <span class="badge ${isNb ? 'subtipo-nb' : 'subtipo-dt'}">${r.subtipo || '—'}</span>
+          <br><small>${r.nombre}</small>
+        </div>
+      </td>
+      <td class="device-model">${r.fabricante ? r.fabricante.replace('Dell Inc.','Dell').replace('LENOVO','Lenovo') : ''} ${r.modelo || ''}</td>
+      <td><span style="font-size:11px;color:var(--text-muted)">${r.os || ''}</span></td>
+      <td>
+        <div class="ticket-cell">
+          <div class="ticket-display" id="ticket-disp-${r._idx}">
+            ${renderTicketBadge(ticket)}
+          </div>
+          <input class="inline-input" style="display:none" id="ticket-inp-${r._idx}"
+            value="${escHtml(r.ticket)}"
+            placeholder="Agregar ticket..."
+            onblur="saveTicket(${r._idx})"
+            onkeydown="if(event.key==='Enter')this.blur()"
+          >
+          <span style="cursor:pointer;font-size:11px;color:var(--text-faint)" onclick="editTicket(${r._idx})">✏️ editar</span>
+        </div>
+      </td>
+      <td>
+        <textarea class="nota-textarea" rows="1"
+          placeholder="Agregar nota..."
+          onfocus="this.rows=3"
+          onblur="this.rows=1;saveNota(${r._idx},this.value)"
+        >${escHtml(r.nota)}</textarea>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function renderAct() {
+  const tbody = document.getElementById('tbody-act');
+  const rows = getFilteredAct();
+  if (rows.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><div class="icon">🔍</div><p>Sin resultados</p></div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = rows.map(r => {
+    const rowCls = r.realizado ? 'row-done' : 'row-pending';
+    return `
+    <tr class="${rowCls}" id="act-row-${r._idx}">
+      <td class="check-wrap">
+        <div class="custom-check ${r.realizado ? 'checked' : ''}" onclick="toggleAct(${r._idx})" title="Marcar/desmarcar realizado"></div>
+      </td>
+      <td>
+        <div class="person-cell">
+          <span class="person-name">${r.propietario || '—'}</span>
+          <span class="person-id">${r.idUser || ''}</span>
+        </div>
+      </td>
+      <td><span style="font-family:var(--mono);font-size:11px">${r.nombre}</span></td>
+      <td class="device-model">${(r.fabricante||'').replace('Dell Inc.','Dell').replace('LENOVO','Lenovo').replace('DELL Inc.','Dell')} ${r.modelo || ''}</td>
+      <td style="text-align:center">${renderActBadge(r.win25h2)}</td>
+      <td>
+        <input class="inline-input" style="max-width:130px" value="${escHtml(r.proaSO)}"
+          placeholder="PROA-..."
+          oninput="actData[${r._idx}].proaSO=this.value"
+        >
+      </td>
+      <td style="text-align:center">${renderActBadge(r.office2024)}</td>
+      <td>
+        <input class="inline-input" style="max-width:130px" value="${escHtml(r.proaOffice)}"
+          placeholder="PROA-... / T2-..."
+          oninput="actData[${r._idx}].proaOffice=this.value"
+        >
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+// ── BADGE HELPERS ──
+function renderTicketBadge(ticket) {
+  if (!ticket || ticket.trim() === '') return '<span style="color:var(--text-faint);font-size:11px">—</span>';
+  const t = ticket.trim();
+  if (t.startsWith('T2-')) return `<span class="badge-ticket t2">${t}</span>`;
+  if (t.startsWith('PROA-')) return `<span class="badge-ticket proa">${t}</span>`;
+  return `<span class="badge-ticket">${t}</span>`;
+}
+
+function parseTicketNote(raw) {
+  if (!raw || raw.trim() === '') return { ticket: '', note: '' };
+  const t = raw.trim();
+  // Patterns: "T2-12345" or "PROA-12345" possibly followed by " - note"
+  const match = t.match(/^((?:T2|PROA)-\d+)\s*[-–]?\s*(.*)$/);
+  if (match) return { ticket: match[1], note: match[2].trim() };
+  // If it's pure note text (like "Realizado agregar ticket", "Usuario externo consultar")
+  const isCode = /^(T2|PROA)-\d+/.test(t);
+  return { ticket: isCode ? t : '', note: isCode ? '' : t };
+}
+
+function renderActBadge(val) {
+  if (!val || val.trim() === '') return '<span style="color:var(--text-faint);font-size:11px">—</span>';
+  const v = val.trim().toLowerCase();
+  if (v === 'si') return '<span class="badge badge-done">✓ SI</span>';
+  if (v.includes('wu') || v === 'wu') return '<span class="badge badge-wu">⟳ WU</span>';
+  if (v.includes('en proceso') || v === 'en proceso') return '<span class="badge badge-proceso">⏳ En proceso</span>';
+  if (v.includes('disponibilizado')) return '<span class="badge badge-disp">📦 Disponib.</span>';
+  if (v.includes('pendiente')) return '<span class="badge badge-pend">⚠ Pendiente</span>';
+  if (v.includes('recambio')) return '<span class="badge badge-recambio">🔄 Recambio</span>';
+  if (v.includes('recuperado') || v.includes('recuper')) return '<span class="badge badge-rec">↩ Recuperado</span>';
+  if (v === 'manual') return '<span class="badge" style="background:#f5f5f5;color:#666">manual</span>';
+  return `<span class="badge" style="background:var(--bg);color:var(--text-muted)">${val}</span>`;
+}
+
+// ── INTERACTIONS ──
+function toggleObs(idx) {
+  obsData[idx].realizado = !obsData[idx].realizado;
+  const done = obsData[idx].realizado;
+  const row = document.getElementById(`obs-row-${idx}`);
+  if (row) {
+    row.className = done ? 'row-done' : 'row-pending';
+    const check = row.querySelector('.custom-check');
+    if (check) check.className = 'custom-check' + (done ? ' checked' : '');
+  }
+  updateStats();
+  updateTabCounts();
+  showToast(done ? 'Marcado como realizado' : 'Desmarcado');
+}
+
+function toggleAct(idx) {
+  actData[idx].realizado = !actData[idx].realizado;
+  const done = actData[idx].realizado;
+  if (done) {
+    if (actData[idx].win25h2 === 'SI' && !actData[idx].proaSO) actData[idx].proaSO = 'PROA-255689';
+    if (actData[idx].office2024 === 'SI' && !actData[idx].proaOffice) actData[idx].proaOffice = 'PROA-255465';
+  }
+  const row = document.getElementById(`act-row-${idx}`);
+  if (row) {
+    row.className = done ? 'row-done' : 'row-pending';
+    const check = row.querySelector('.custom-check');
+    if (check) check.className = 'custom-check' + (done ? ' checked' : '');
+  }
+  updateStats();
+  updateTabCounts();
+  showToast(done ? 'Marcado como realizado' : 'Desmarcado');
+}
+
+function editTicket(idx) {
+  const disp = document.getElementById(`ticket-disp-${idx}`);
+  const inp = document.getElementById(`ticket-inp-${idx}`);
+  if (!disp || !inp) return;
+  disp.style.display = 'none';
+  inp.style.display = 'block';
+  inp.focus();
+  inp.select();
+}
+
+function saveNota(idx, val) {
+  obsData[idx].nota = val;
+}
+
+function saveTicket(idx) {
+  const inp = document.getElementById(`ticket-inp-${idx}`);
+  if (!inp) return;
+  obsData[idx].ticket = inp.value;
+  const disp = document.getElementById(`ticket-disp-${idx}`);
+  const { ticket } = parseTicketNote(inp.value);
+  if (disp) {
+    disp.innerHTML = renderTicketBadge(ticket);
+    disp.style.display = 'flex';
+  }
+  inp.style.display = 'none';
+}
+
+// ── FILTERS ──
+function switchTab(tab) {
+  currentTab = tab;
+  document.getElementById('panel-obs').style.display = tab === 'obs' ? 'block' : 'none';
+  document.getElementById('panel-act').style.display = tab === 'act' ? 'block' : 'none';
+  document.getElementById('tab-obs').className = 'tab' + (tab === 'obs' ? ' active' : '');
+  document.getElementById('tab-act').className = 'tab' + (tab === 'act' ? ' active' : '');
+  const showDevice = tab === 'obs';
+  document.getElementById('device-filter-btns').style.display = showDevice ? 'flex' : 'none';
+  document.getElementById('device-filter-sep').style.display = showDevice ? 'block' : 'none';
+  if (tab === 'act' && deviceFilter !== 'all') {
+    deviceFilter = 'all';
+    document.querySelectorAll('#device-filter-btns .filter-btn').forEach((b, i) => {
+      b.classList.toggle('active', i === 0);
+    });
+  }
+}
+
+function setFilter(filter, btn) {
+  currentFilter = filter;
+  document.querySelectorAll('#status-filter-btns .filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  applyFilter();
+}
+
+function setDeviceFilter(filter, btn) {
+  deviceFilter = filter;
+  document.querySelectorAll('#device-filter-btns .filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  applyFilter();
+}
+
+function applyFilter() {
+  renderObs();
+  renderAct();
+  updateTabCounts();
+}
+
+function updateTabCounts() {
+  const obsFilt = getFilteredObs();
+  const actFilt = getFilteredAct();
+  document.getElementById('tc-obs').textContent = obsFilt.length;
+  document.getElementById('tc-act').textContent = actFilt.length;
+}
+
+// ── STATS ──
+function updateStats() {
+  // Obs
+  const obsDone = obsData.filter(r => r.realizado).length;
+  const obsTotal = obsData.length;
+  const obsPct = obsTotal ? Math.round(obsDone / obsTotal * 100) : 0;
+  document.getElementById('obs-val').textContent = `${obsDone}/${obsTotal}`;
+  document.getElementById('obs-bar').style.width = obsPct + '%';
+  document.getElementById('obs-pct').textContent = `${obsPct}% completado`;
+
+  // Win
+  const winDone = actData.filter(r => (r.win25h2||'').trim().toUpperCase() === 'SI' || r.realizado).length;
+  const actTotal = actData.length;
+  const winPct = actTotal ? Math.round(winDone / actTotal * 100) : 0;
+  document.getElementById('win-val').textContent = `${winDone}/${actTotal}`;
+  document.getElementById('win-bar').style.width = winPct + '%';
+  document.getElementById('win-pct').textContent = `${winPct}% completado`;
+
+  // Office
+  const offDone = actData.filter(r => (r.office2024||'').trim().toUpperCase() === 'SI').length;
+  const offPct = actTotal ? Math.round(offDone / actTotal * 100) : 0;
+  document.getElementById('off-val').textContent = `${offDone}/${actTotal}`;
+  document.getElementById('off-bar').style.width = offPct + '%';
+  document.getElementById('off-pct').textContent = `${offPct}% completado`;
+
+  // General
+  const totalTasks = obsTotal + actTotal * 2;
+  const totalDone = obsDone + winDone + offDone;
+  const genPct = totalTasks ? Math.round(totalDone / totalTasks * 100) : 0;
+  document.getElementById('gen-val').textContent = genPct + '%';
+  document.getElementById('gen-bar').style.width = genPct + '%';
+  document.getElementById('gen-sub').textContent = `${totalDone} de ${totalTasks} tareas`;
+  document.getElementById('gen-bar').className = 'progress-fill' + (genPct < 40 ? ' warn' : '');
+}
+
+// ── EXPORT ──
+function exportXLSX() {
+  if (!workbook) return;
+
+  // Rebuild Obsolescencia sheet
+  const obsWS = workbook.Sheets['Objetivos Obsolescencia'];
+  const obsRows = XLSX.utils.sheet_to_json(obsWS, { header: 1, defval: null });
+  // Headers in row 0, data from row 1
+  obsData.forEach((r, i) => {
+    const rowIdx = r._idx + 1; // +1 for header
+    if (obsRows[rowIdx]) {
+      obsRows[rowIdx][0] = r.realizado; // Realizado col A
+      obsRows[rowIdx][1] = r.ticket;    // T2 recambio col B
+      if (notaColIdx >= 0) obsRows[rowIdx][notaColIdx] = r.nota;
+    }
+  });
+  const newObsWS = XLSX.utils.aoa_to_sheet(obsRows);
+  workbook.Sheets['Objetivos Obsolescencia'] = newObsWS;
+
+  // Rebuild Actualizaciones sheet
+  const actWS = workbook.Sheets['Actualizaciones ver w11 Office'];
+  const actRows = XLSX.utils.sheet_to_json(actWS, { header: 1, defval: null });
+  actData.forEach((r, i) => {
+    const rowIdx = r._idx + 1;
+    if (actRows[rowIdx]) {
+      actRows[rowIdx][0] = r.realizado;    // Realizado
+      // Win 11 25H2 col B stays as-is (user edits via badge/text)
+      actRows[rowIdx][2] = r.proaSO;       // PROA SO
+      actRows[rowIdx][4] = r.proaOffice;   // PROA Office
+    }
+  });
+  const newActWS = XLSX.utils.aoa_to_sheet(actRows);
+  workbook.Sheets['Actualizaciones ver w11 Office'] = newActWS;
+
+  const now = new Date();
+  const stamp = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}`;
+  XLSX.writeFile(workbook, `Objetivos_Salvatierra_${stamp}.xlsx`);
+  showToast('Archivo exportado correctamente');
+}
+
+// ── DEADLINE ──
+function updateDeadlineCard() {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const deadline = new Date(deadlineDate + 'T00:00:00');
+  const diffMs = deadline - today;
+  const diff = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+
+  const valEl = document.getElementById('days-val');
+  const barEl = document.getElementById('days-bar');
+  const dateEl = document.getElementById('days-date');
+  if (!valEl) return;
+
+  if (diff > 0) {
+    valEl.textContent = diff + (diff === 1 ? ' día' : ' días');
+  } else if (diff === 0) {
+    valEl.textContent = '¡Hoy!';
+  } else {
+    valEl.textContent = Math.abs(diff) + 'd vencido';
+  }
+
+  if (diff <= 0) {
+    valEl.style.color = 'var(--danger)';
+    barEl.style.background = 'var(--danger)';
+    barEl.style.width = '100%';
+  } else if (diff <= 7) {
+    valEl.style.color = 'var(--warn)';
+    barEl.style.background = '#d97706';
+    const pct = Math.max(0, 100 - Math.round(diff / 7 * 100));
+    barEl.style.width = pct + '%';
+  } else {
+    valEl.style.color = 'var(--accent)';
+    barEl.style.background = 'var(--accent)';
+    // progress from project start 2026-01-01
+    const start = new Date('2026-01-01T00:00:00');
+    const totalDays = Math.ceil((deadline - start) / (1000 * 60 * 60 * 24));
+    const elapsed = Math.ceil((today - start) / (1000 * 60 * 60 * 24));
+    const pct = Math.min(100, Math.max(0, Math.round(elapsed / totalDays * 100)));
+    barEl.style.width = pct + '%';
+  }
+
+  const [y, m, d] = deadlineDate.split('-');
+  dateEl.textContent = `Límite: ${d}/${m}/${y}`;
+}
+
+function editDeadline() {
+  const inp = document.getElementById('deadline-input');
+  inp.value = deadlineDate;
+  inp.style.display = 'block';
+  inp.focus();
+}
+
+function saveDeadline(val) {
+  if (val) {
+    deadlineDate = val;
+    updateDeadlineCard();
+  }
+  document.getElementById('deadline-input').style.display = 'none';
+}
+
+function closeDeadlineInput() {
+  setTimeout(() => {
+    document.getElementById('deadline-input').style.display = 'none';
+  }, 150);
+}
+
+// ── UTILS ──
+function escHtml(str) {
+  return (str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// Inicializar card de días al cargar
+updateDeadlineCard();
+</script>
+</body>
+</html>
